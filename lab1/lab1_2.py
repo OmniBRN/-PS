@@ -27,7 +27,7 @@ plt.show()
 
 # 2.c)
 t3 = np.linspace(0, 1, 960)
-z = np.mod(t3, 1)
+z = np.mod(t3, 1/240)
 fig, axs = plt.subplots()
 fig.suptitle("Semnal Sawtooth de frecventa 240Hz")
 axs.plot(t3,z)
