@@ -14,7 +14,9 @@ fig, axs = plt.subplots()
 fig.suptitle("Exercitiul 2 - Cele Patru Faze")
 for i in range(len(faze)):
     axs.plot(t, grafice[i])
-plt.savefig("2_Cele_Patru_Faze.pdf")
+axs.set_xlabel("Time")
+axs.set_ylabel("Amplitude")
+plt.savefig("2_2_Cele_Patru_Faze.pdf")
 
 # Alegem al doilea
 
@@ -26,10 +28,12 @@ SNR = [0.1, 1, 10, 100]
 gamma = [np.sqrt(t) for t in [norma_x/(x * norma_z) for x in SNR]]
 
 grafice_finale = [grafice[1] + gamma[i] * z for i in range(len(SNR))]
-fig, axs = plt.subplots(4)
-fig.suptitle("Graficul 2 cu Noise")
+fig, axs = plt.subplots(4, figsize=(16,12))
+fig.suptitle("Exercitiul 2 - Graficul 2 cu Noise")
 for i in range(len(SNR)):
     axs[i].plot(t, grafice_finale[i])
+    axs[i].set_xlabel("Time")
+    axs[i].set_ylabel("Amplitude")
 
-plt.savefig("2_Noise_Graph.pdf")
+plt.savefig("2_2_Noise_Graph.pdf")
 

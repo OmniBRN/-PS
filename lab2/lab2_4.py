@@ -15,11 +15,17 @@ y_sawtooth = 20 * np.mod(t, 1/20)
 
 z_suma = x_sinus + y_sawtooth
 
-fig, axs = plt.subplots(3)
+fig, axs = plt.subplots(3, figsize=(12,9))
 fig.suptitle("Exercitiul 4 - Sinus, Sawtooth si Suma lor")
 axs[0].plot(t, x_sinus)
+axs[0].set_xlabel("Time")
+axs[0].set_ylabel("Amplitude")
 axs[1].plot(t, y_sawtooth)
+axs[1].set_xlabel("Time")
+axs[1].set_ylabel("Amplitude")
 axs[2].plot(t, z_suma)
+axs[2].set_xlabel("Time")
+axs[2].set_ylabel("Amplitude")
 plt.savefig("2_4.pdf")
 plt.show()
 
