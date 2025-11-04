@@ -15,7 +15,7 @@ def getFourierMatrix(order=8):
     return np.array(result)
 
 
-order = 8 
+order = 2 
 matrix = getFourierMatrix(order)
 
 fig, axs = plt.subplots(order)
@@ -27,7 +27,6 @@ for i,x in enumerate(matrix):
     axs[i].plot(imaginary_x)
 
 plt.savefig("3_1.pdf")
-plt.savefig("3_1.png")
 plt.show()
 
 matrix_2 = 1/order * np.conjugate(np.transpose(matrix))
