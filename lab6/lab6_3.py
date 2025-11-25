@@ -59,7 +59,6 @@ def convolutie_fft(polinom1, polinom2):
 
 p1 = [33, 5, -128]
 p2 = [-13, 4, -8, 17]
-# print(produsul_polinoamelor(p1,p2))
 print(convolutia(p1,p2))
 print(convolutie_fft(p1,p2))
 # Sanity Check

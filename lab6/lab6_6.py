@@ -44,11 +44,14 @@ butter_x = scp.signal.filtfilt(butter_b, butter_a, x)
 cheby_x = scp.signal.filtfilt(cheby_b, cheby_a, x)
 
 fig, axs = plt.subplots()
+fig.suptitle("Graficul neatins, filtrat cu butter si cheby")
+axs.set_xlabel("Timp (s)")
+axs.set_ylabel("Amplitudine")
 axs.plot(x, color="Blue", label="Unfiltered")
 axs.plot(butter_x, color="Green", label="Butter")
 axs.plot(cheby_x, color="Orange", label="Cheby")
 axs.legend()
-plt.show()
+plt.savefig("6_6.pdf")
 
 # f) Pentru a observa trenduri recurente (elimina varfuri particulare) este folositor un 
 # filtru butter, cu un ordin mai mic (am vazut ca 3 arata ok) il face sa arate mai consistent
