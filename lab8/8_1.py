@@ -78,10 +78,12 @@ def calculate_predictions(serie_timp, orizont_de_timp, p):
             serie_timp = serie_timp[:lungime]
         vector_autocorelatie = convolutia(serie_timp, serie_timp[::-1])
         Gamma_mare = [[0 for _x in range(p)] for _y in range(p)]
+        mij = len(vector_autocorelatie)//2
+        gamma = vector_autocorelatie[mij:mij+p+1]
         for i in range(p):
             for j in range(p):
-                Gamma_mare[i][j] = vector_autocorelatie[j-i]
-        Gamma_mic = [vector_autocorelatie[x] for x in range(1, p+1)]
+                Gamma_mare[i][j] = gamma[abs(j-i)]
+        Gamma_mic = gamma[1:]
         Gamma_mare_invers = np.linalg.inv(Gamma_mare)
         x = Gamma_mare_invers @ Gamma_mic
         return x
@@ -106,16 +108,16 @@ plt.savefig("8_1_Predicitie la ultimul punct.pdf")
 # d)
 
 
-best_m = 4
-best_p = 27
+best_m = 2
+best_p = 63
 best_MSE = 10e10
 cutoff_c = 1
 
-# m = 4 p = 27
-# for m_i in range(2, 51):
-#     for p_i in range(2, 51):
+# m = 2 p = 63
+# for m_i in range(2, 15):
+#     for p_i in range(2, 101):
 #         y_prediction = calculate_predictions(y[:-cutoff_c], m_i, p_i)[0]
-#         MSE = abs(y_prediction - y[-1])
+#         MSE = (y_prediction - y[-1])**2
 #         print(f"Incercam m={m_i} p={p_i} cu MSE={MSE}")
 #         if MSE < best_MSE:
 #             print(f"Success m={m_i} p={p_i}")
@@ -125,10 +127,17 @@ cutoff_c = 1
 
 
 y_prediction = np.append(y[:-1], calculate_predictions(y[:-cutoff_c], best_m, best_p)[0])
-fig, axs = plt.subplots(2)
+fig, axs = plt.subplots(2, figsize=(8, 10))
+fig.suptitle("Predictie dupa fine-tuning")
 axs[0].plot(y[-10:])
+axs[0].set_title("Original")
+axs[0].set_xlabel("Timp")
+axs[0].set_ylabel("Amplitudine")
 axs[1].plot(y_prediction[-10:])
-plt.show()
+axs[1].set_title(f"Predicitie (m={best_m}, p={best_p})")
+axs[1].set_xlabel("Timp")
+axs[1].set_ylabel("Amplitudine")
+plt.savefig("8_1_Predictie_Fine_Tunning.pdf")
 
 
 
