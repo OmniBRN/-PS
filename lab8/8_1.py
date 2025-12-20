@@ -60,7 +60,9 @@ def convolutia(polinom1, polinom2):
 # In numpy este functia np.correlate(y, y, mode="full") care este echivalent cu 
 # convolutia(y, y[::-1])
 
-y_autocorelatie = convolutia(y,y[::-1])
+y_norm = y - np.mean(y)
+y_autocorelatie = convolutia(y_norm,y_norm[::-1])
+y_autocorelatie = y_autocorelatie / np.max(y_autocorelatie)
 fig, axs = plt.subplots(2, figsize=(10, 6))
 fig.suptitle("Autocorelatia Seriei de Timp")
 axs[0].plot(x, y)
@@ -71,87 +73,84 @@ plt.savefig("8_1_Autocorelatia.pdf")
 
 # c)
 
-def calculate_predictions(serie_timp, orizont_de_timp, p):
+def get_x(serie_timp,p):
 
-    def get_x(serie_timp,p,lungime=None):
-        if lungime != None:
-            serie_timp = serie_timp[:lungime]
-        vector_autocorelatie = convolutia(serie_timp, serie_timp[::-1])
-        Gamma_mare = [[0 for _x in range(p)] for _y in range(p)]
-        mij = len(vector_autocorelatie)//2
-        gamma = vector_autocorelatie[mij:mij+p+1]
-        for i in range(p):
-            for j in range(p):
-                Gamma_mare[i][j] = gamma[abs(j-i)]
-        Gamma_mic = gamma[1:]
-        Gamma_mare_invers = np.linalg.inv(Gamma_mare)
-        x = Gamma_mare_invers @ Gamma_mic
-        return x
+    serie_timp = serie_timp - np.mean(serie_timp)
+    vector_autocorelatie = convolutia(serie_timp, serie_timp[::-1])
+    mij = len(vector_autocorelatie)//2
+    gamma = vector_autocorelatie[mij: mij+p+1]
+    if gamma[0] != 0:
+        temp = gamma[0]
+        gamma = gamma / temp
+    Gamma_mare = np.zeros((p,p))
+    for i in range(p):
+        for j in range(p):
+            Gamma_mare[i][j] = gamma[abs(j-i)]
+    gamma_mic = gamma[1:p+1]
+    x = np.linalg.solve(Gamma_mare, gamma_mic)
+    return x
 
-    x_star = get_x(serie_timp, p)
-    Y = [[0 for i in range(p)] for i in range(orizont_de_timp)]
-    for u, i in enumerate(range(len(serie_timp)-1, len(serie_timp)-orizont_de_timp-1, -1)):
-        for v, j in enumerate(range(p)):
-            Y[u][v] = serie_timp[i-j]
-    Y = np.array(Y)
-    y_caciula = Y @ x_star
-    return y_caciula
+def make_predictions(number_of_predictions, serie_timp, p, x_star):
+    for _ in range(number_of_predictions):
+        predictie = np.dot(serie_timp[-p:][::-1] - medie, x_star)
+        serie_timp = np.append(serie_timp, predictie + medie)
+    return serie_timp
 
 
-cutoff_c = 1
-y_predictions = np.append(y[:-cutoff_c], calculate_predictions(y[:-cutoff_c], 20, 5)[0])
-fig, axs = plt.subplots(2, figsize=(5, 3))
-axs[0].plot(y[-10:])
-axs[1].plot(y_predictions[-10:])
+m = 10
+p = 7
+number_of_predictions = 10
+x_star = get_x(y[-m:], p)
+medie = np.mean(y[-m:])
+
+y_predictions = y[:-number_of_predictions]
+y_predictions = make_predictions(number_of_predictions, y_predictions, p, x_star)
+
+fig, axs = plt.subplots(2, figsize=(8, 10))
+axs[0].plot(x[-15:], y[-15:])
+axs[0].set_title("Seria originala")
+axs[0].set_ylabel("Amplitudine")
+axs[0].set_xlabel("timp")
+axs[1].plot(x[-15:], y_predictions[-15:])
+axs[1].set_ylabel("Amplitudine")
+axs[1].set_xlabel("timp")
+axs[1].set_title("Seria dupa prezicere")
 plt.savefig("8_1_Predicitie la ultimul punct.pdf")
 
-# d)
+# # d)
 
 
-best_m = 2
-best_p = 63
 best_MSE = 10e10
-cutoff_c = 1
+best_prediction = None
+for p_i in range(2, 50):
+    for m_i in range(p_i+2, 251):
+        number_of_predictions = 1
+        x_star = get_x(y[-m_i:], p_i)
+        medie = np.mean(y[-m_i:])
+        y_predictions = y[:-number_of_predictions]
+        y_prediction = make_predictions(number_of_predictions, y_predictions, p_i, x_star)[-1]
+        MSE = (y_prediction - y[-1])**2
+        print(f"Incercam m={m_i} p={p_i} cu MSE={MSE}")
+        if MSE < best_MSE:
+            print(f"Success m={m_i} p={p_i}")
+            best_m = m_i
+            best_p = p_i
+            best_MSE = MSE
+            best_prediction = y_prediction
 
-# m = 2 p = 63
-# for m_i in range(2, 15):
-#     for p_i in range(2, 101):
-#         y_prediction = calculate_predictions(y[:-cutoff_c], m_i, p_i)[0]
-#         MSE = (y_prediction - y[-1])**2
-#         print(f"Incercam m={m_i} p={p_i} cu MSE={MSE}")
-#         if MSE < best_MSE:
-#             print(f"Success m={m_i} p={p_i}")
-#             best_m = m_i
-#             best_p = p_i
-#             best_MSE = MSE
 
-
-y_prediction = np.append(y[:-1], calculate_predictions(y[:-cutoff_c], best_m, best_p)[0])
+y_predictions = np.append(y[:-1], best_prediction)
+print(best_m, best_p, best_MSE)
 fig, axs = plt.subplots(2, figsize=(8, 10))
 fig.suptitle("Predictie dupa fine-tuning")
-axs[0].plot(y[-10:])
+axs[0].plot(x[-5:], y[-5:])
 axs[0].set_title("Original")
 axs[0].set_xlabel("Timp")
 axs[0].set_ylabel("Amplitudine")
-axs[1].plot(y_prediction[-10:])
+axs[1].plot(x[-5:], y_predictions[-5:])
 axs[1].set_title(f"Predicitie (m={best_m}, p={best_p})")
 axs[1].set_xlabel("Timp")
 axs[1].set_ylabel("Amplitudine")
 plt.savefig("8_1_Predictie_Fine_Tunning.pdf")
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
